@@ -37,4 +37,17 @@ export class GroupController {
             res.status(500).json({ error: "Internal Server Error" });
         }
     }
+
+    public async addWords(req: Request, res: Response) {
+        try {
+            const words = req.body.words;
+            const translation = req.body.translation;
+            const group_id = req.body.group_id;
+            const group = await groupService.addWords(words, translation, group_id);
+            res.status(200).json(group);
+        } catch (error) {
+            console.error("Error connecting to the arduino", error);
+            res.status(500).json({ error: "Internal Server Error" });
+        }
+    }
 };
