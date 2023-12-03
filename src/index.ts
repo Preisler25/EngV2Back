@@ -18,6 +18,7 @@ app.use(cors(
 app.use(json());
 
 app.use(routerGroup);
+app.use(express.static('src/public'));
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
