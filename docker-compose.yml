@@ -1,0 +1,28 @@
+version: '3'
+services:
+  eng-app:
+    networks:
+      - eng-network
+    links:
+      - eng-db
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - eng-db
+  eng-db:
+    networks:
+      - eng-network
+    image: postgres:alpine
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+
+networks:
+  eng-network:
+    driver: bridge
