@@ -1,13 +1,24 @@
-// src/index.ts
+import * as dotenv from 'dotenv';
 import express from 'express';
+import { json } from 'express';
+import routerGroup from './routes/groupRouter';
+import cors from 'cors';
+
+dotenv.config();
 
 const app = express();
-const port = 3000;
+const port = process.env.APP_PORT || 3000;
 
-app.get('/', async (req, res) => {
-    res.send('Hello World!');
-});
+app.use(cors(
+  {
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE']
+  }
+));
+app.use(json());
+
+app.use(routerGroup);
 
 app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+  console.log(`Server running on port ${port}`);
 });
