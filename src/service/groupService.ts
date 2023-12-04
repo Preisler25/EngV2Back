@@ -1,5 +1,7 @@
 import { Group } from '../model/group';
 import { q, connectToDB, disconnectFromDB } from '../helper/pgHelper';
+import { Word } from '../model/word';
+import { Value } from 'ts-postgres';
 
 export class GroupService {
     convertToGroup = (rows: any[]): Group => {
@@ -24,6 +26,7 @@ export class GroupService {
                 await disconnectFromDB(client);
 
                 const g = this.convertToGroup(res.rows);
+                console.log(g);
                 return g;
             } catch (error) {
                 return error;
@@ -50,33 +53,52 @@ export class GroupService {
         return res;
     }
 
-    createGroup = (name: string, key: string) => {
-        const res = new Promise<Group>(async () => {
-            try {
-                const client = await connectToDB();
-                await q(client, `INSERT INTO groups (g_name, g_key) VALUES ('${name}', '${key}')`);
-                await disconnectFromDB(client);
-                return;
-            } catch (error) {
-                return error;
-            }
+    convertToWordList = (text: string, g_id: any): Word[] => {
+        const list: Word[] = [];
+        const words = text.split('\n');
+        const id = Number(g_id);
+
+        words.forEach(word => {
+            const w = word.split(':');
+            list.push({
+                word: w[0],
+                translation: w[1],
+                group_id: id,
+            });
         });
-        return res;
+        return list;
     }
 
-    addWords = (words: string[], translations: string[], group_id: number) => {
+    createGroup = (name: string, key: string, text: string): string => {
         const res = new Promise<Group>(async () => {
             try {
                 const client = await connectToDB();
-                words.forEach(async (word, index) => {
-                    await q(client, `INSERT INTO words (word, translation, g_id) VALUES ('${word}', '${translations[index]}', ${group_id})`);
-                });
+                const res = await q(client, `INSERT INTO groups (g_name, g_key) VALUES ('${name}', '${key}') RETURNING g_id`);
+                
+                const words: Word[] = this.convertToWordList(text, res.rows[0]);
                 await disconnectFromDB(client);
-                return;
+                this.addWords(words);
+                return "OK";
             } catch (error) {
                 return error;
             }
         });
-        return res;
+        return "OK";
+    }
+
+    addWords = (words: Word[]) => {
+        const res = new Promise<Group>(async () => {
+            try {
+                const client = await connectToDB();
+                words.forEach(async (word) => {
+                    await q(client, `INSERT INTO words (word, translation, g_id) VALUES ('${word.word}', '${word.translation}', ${word.group_id})`);
+                });
+                await disconnectFromDB(client);
+                return "OK";
+            } catch (error) {
+                return error;
+            }
+        });
+        return "OK";
     }
 };

@@ -30,20 +30,10 @@ export class GroupController {
         try {
             const name = req.body.name;
             const key = req.body.key;
-            const group = await groupService.createGroup(name, key);
-            res.status(200).json(group);
-        } catch (error) {
-            console.error("Error connecting to the arduino", error);
-            res.status(500).json({ error: "Internal Server Error" });
-        }
-    }
+            const text = req.body.text;
 
-    public async addWords(req: Request, res: Response) {
-        try {
-            const words = req.body.words;
-            const translation = req.body.translation;
-            const group_id = req.body.group_id;
-            const group = await groupService.addWords(words, translation, group_id);
+
+            const group: string = await groupService.createGroup(name, key, text);
             res.status(200).json(group);
         } catch (error) {
             console.error("Error connecting to the arduino", error);
